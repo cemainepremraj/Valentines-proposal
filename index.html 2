@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Will you be my Valentine, Prince? 💘</title>
+  <meta name="description" content="Hey Rohil, this is a tiny website from Cémaine. Be my Valentine?"/>
+  <style>
+    :root{
+      --bg:#fff5f7;
+      --pink:#ff4d6d;
+      --pink-dark:#e03b5b;
+      --text:#2a2a2a;
+      --yes:#2ecc71;
+      --yes-dark:#27ae60;
+      --gold:#f0c419;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(1200px 1200px at 20% -10%, #ffe6ee 0%, transparent 60%),
+        radial-gradient(800px 800px at 120% 10%, #ffe1eb 0%, transparent 60%),
+        var(--bg);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    /* Floating hearts and sparkles */
+    .bg{ position:fixed; inset:0; pointer-events:none; overflow:hidden; }
+    .heart,.spark{ position:absolute; opacity:.25; animation: floatUp linear infinite; }
+    .heart{
+      width:16px; height:16px; background: var(--pink); transform: rotate(45deg);
+    }
+    .heart::before,.heart::after{
+      content:""; position:absolute; width:16px; height:16px; background:var(--pink); border-radius:50%;
+    }
+    .heart::before{ left:-8px; } .heart::after{ top:-8px; }
+    .spark{ width:6px; height:6px; background: var(--gold); box-shadow: 0 0 8px rgba(240,196,25,.9); transform: rotate(45deg); }
+
+    @keyframes floatUp{
+      from{ transform:translateY(120vh) rotate(45deg); }
+      to{ transform:translateY(-20vh) rotate(45deg); }
+    }
+
+    .card{
+      position:absolute; inset:0; margin:auto; top:50%; transform:translateY(-50%);
+      width:min(620px, 92vw);
+      background:#fff; border-radius:22px;
+      box-shadow:0 20px 60px rgba(255, 77, 109, .25), 0 8px 24px rgba(0,0,0,.08);
+      padding:30px 24px 34px;
+      text-align:center;
+      display:flex; flex-direction:column; gap:18px;
+    }
+    h1{ margin:6px 0 0; font-size: clamp(24px, 3.8vw, 38px); line-height:1.15; }
+    .subtitle{ color:#6b6b6b; font-size: clamp(14px, 2.6vw, 16px); }
+    .question{
+      font-size: clamp(20px, 4.2vw, 30px); font-weight: 900; color:var(--pink); margin:8px 0 2px;
+    }
+    .note{
+      background: #fff5f8; border: 1px dashed #ffc2d1; border-radius: 14px; padding: 10px 12px; color:#444; font-size:14px;
+    }
+
+    .buttons{
+      position:relative; display:flex; align-items:center; justify-content:center; gap:16px;
+      margin-top:8px; min-height:92px; flex-wrap:wrap;
+    }
+    button{
+      border:0; padding:14px 22px; border-radius:999px; font-weight:800; cursor:pointer;
+      transition: transform .12s ease, background .12s ease, box-shadow .12s ease;
+      box-shadow:0 8px 18px rgba(0,0,0,.12);
+      font-size: clamp(14px, 2.8vw, 16px);
+      user-select:none;
+    }
+    .yes{ background: var(--yes); color:#fff; }
+    .yes:hover{ background: var(--yes-dark); transform: translateY(-2px) scale(1.04); }
+    .no{ background:#f1f3f5; color:#343a40; position:absolute; }
+    .no:active{ transform: scale(.98); }
+    .footer{ color:#8b8b8b; font-size:12px; margin-top:6px; }
+
+    /* Success state */
+    .success{ display:none; flex-direction:column; align-items:center; gap:10px; text-align:center; }
+    .success h2{ color: var(--pink); font-size: clamp(22px,4.6vw,30px); margin: 8px 0 0; }
+    .success p{ margin:0; color:#5a5a5a; }
+
+    /* Confetti */
+    canvas#confetti{ position:fixed; inset:0; pointer-events:none; }
+
+    /* Hidden YouTube player (audio only) */
+    .yt-audio-only{ position: fixed; width:1px; height:1px; left:-9999px; top:auto; overflow:hidden; }
+
+    @media (max-width:480px){
+      .card{ padding:22px 16px 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true" id="bg"></div>
+  <canvas id="confetti"></canvas>
+
+  <!-- Audio method A: YouTube (official upload). We set src after user taps/clicks. -->
+  <div class="yt-audio-only" aria-hidden="true">
+    <iframe
+      id="ytPlayer"
+      title="Pehla Nasha — Saregama (audio)"
+      width="1" height="1"
+      frameborder="0"
+      allow="autoplay; encrypted-media"
+      referrerpolicy="origin"
+    ></iframe>
+  </div>
+
+  
+  <audio id="song" preload="auto">
+    your-pehla-nasha.mp3
+  </audio>
+
+
+  <main class="card" role="dialog" aria-labelledby="title" aria-describedby="desc">
+    <div class="intro">
+      <!-- Cute note uses his name Rohil (no 'Prince' here) -->
+      <div class="subtitle" id="desc">
+        Hi <strong>Rohil</strong> — you make my status go from “Do Not Disturb” to “Disturb me with cuddles.” ✨
+      </div>
+      <h1 id="title">Will you be my Valentine, Prince? 💖</h1>
+
+      <div class="note" id="cheese">Loading extra cheese… 🧀</div>
+    </div>
+
+    <div class="buttons" id="buttons">
+      <button class="yes" id="yesBtn" aria-label="Yes">Yes, obviously 😍</button>
+      <button class="no" id="noBtn" aria-label="No" type="button">No</button>
+    </div>
+
+    <div class="footer">Made with 💗 by <em>Cemaine</em></div>
+
+    <section class="success" id="success">
+      <h2>Yay! You said YES! 🎉</h2>
+      <p>Warning: incoming avalanche of hugs, sweets & cheesy texts.</p>
+      <p style="margin-top:8px">P.S. Save the date — I’ve got something planned. 💌</p>
+    </section>
+  </main>
+
+  <script>
+    // --- Background decor (hearts + sparkles) ---
+    (function makeDecor(){
+      const container = document.getElementById('bg');
+      const hearts = 24, sparks = 18;
+      const mk = (cls, size, dur, delay, left, opacity) => {
+        const el = document.createElement('div'); el.className = cls;
+        el.style.width = el.style.height = size + 'px';
+        el.style.left = left + 'vw';
+        el.style.animationDuration = dur + 's';
+        el.style.animationDelay = delay + 's';
+        el.style.opacity = opacity.toFixed(2);
+        container.appendChild(el);
+      };
+      for(let i=0;i<hearts;i++) mk('heart', 10+Math.random()*18, 10+Math.random()*12, -Math.random()*10, Math.random()*100, 0.15+Math.random()*0.25);
+      for(let i=0;i<sparks;i++) mk('spark', 4+Math.random()*6, 8+Math.random()*10, -Math.random()*8, Math.random()*100, 0.2+Math.random()*0.3);
+    })();
+
+    const buttonsWrap = document.getElementById('buttons');
+    const yes = document.getElementById('yesBtn');
+    const no = document.getElementById('noBtn');
+    const success = document.getElementById('success');
+
+    // Cheesy lines that rotate
+    const cheeseLines = [
+      "You’re my favorite plot twist, Prince. 💫",
+      "Certified cutie. ISO 9001 approved. 😌✅",
+      "If kisses were Wi‑Fi, yours would be full bars. 📶💋",
+      "You + me = ☕ + 🍫 + endless giggles.",
+      "I checked my calendar: I’m free to adore you forever. 🗓️💕",
+      "Breaking news: Heart stolen by Rohil. 🗞️💘"
+    ];
+    const cheeseBox = document.getElementById('cheese');
+    function shuffleCheese(){ cheeseBox.textContent = cheeseLines[Math.floor(Math.random()*cheeseLines.length)]; }
+    shuffleCheese(); setInterval(shuffleCheese, 3500);
+
+    // Initial placement
+    function placeInitial(){
+      const rect = buttonsWrap.getBoundingClientRect();
+      yes.style.position = 'relative'; yes.style.left = '0px'; yes.style.top = '0px';
+      const yesRect = yes.getBoundingClientRect();
+      no.style.left = (yesRect.right - rect.left + 12) + 'px';
+      no.style.top  = (yesRect.top - rect.top) + 'px';
+    }
+    window.addEventListener('load', placeInitial);
+    window.addEventListener('resize', placeInitial);
+
+    // Keep No inside and make it dodge
+    let noScale = 1.0;
+    function randomNoPosition(avoidX, avoidY){
+      const pr = buttonsWrap.getBoundingClientRect();
+      const nr = no.getBoundingClientRect();
+      const pad = 6;
+      let x, y, tries = 0;
+      do {
+        x = Math.random()*(pr.width - nr.width - pad*2) + pad;
+        y = Math.random()*(pr.height - nr.height - pad*2) + pad;
+        tries++;
+      } while (avoidX !== undefined && Math.hypot((pr.left + x) - avoidX, (pr.top + y) - avoidY) < 90 && tries < 40);
+      no.style.left = x + 'px'; no.style.top = y + 'px';
+      const variants = ["Nice try 😏","Are you sure, Prince? 🤨","Denied. Try Yes. 😌","Oops, slippery! 🧈"];
+      no.textContent = variants[Math.floor(Math.random()*variants.length)];
+      noScale = Math.max(0.78, noScale - 0.04);
+      no.style.transform = `scale(${noScale})`;
+    }
+    no.addEventListener('mouseenter', (e)=>{ randomNoPosition(e.clientX, e.clientY); yes.style.transform='scale(1.06)'; setTimeout(()=>yes.style.transform='scale(1)',150);});
+    buttonsWrap.addEventListener('mousemove', (e)=>{
+      const nr = no.getBoundingClientRect();
+      const d = Math.hypot(e.clientX-(nr.left+nr.width/2), e.clientY-(nr.top+nr.height/2));
+      if (d < 80) randomNoPosition(e.clientX, e.clientY);
+    });
+    no.addEventListener('touchstart', (e)=>{ e.preventDefault(); randomNoPosition(); yes.style.transform='scale(1.08)'; setTimeout(()=>yes.style.transform='scale(1)',180); }, {passive:false});
+
+    // Yes → success + confetti + music
+    yes.addEventListener('click', ()=>{
+      buttonsWrap.style.display = 'none';
+      success.style.display = 'flex';
+      confettiBurst();
+      startMusic(true); // unmute because user clicked
+      if (navigator.vibrate) navigator.vibrate([50,30,80]);
+    });
+
+    // Confetti
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d'); let confetti = [];
+    function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+    function confettiBurst(){
+      confetti = [];
+      const colors = ['#ff4d6d','#ffd166','#06d6a0','#118ab2','#ef476f','#f78da7'];
+      const count = 180;
+      for(let i=0;i<count;i++){
+        confetti.push({ x: canvas.width/2, y: canvas.height/2 - 40,
+          dx: (Math.random()*4 - 2) * (1 + Math.random()*2),
+          dy: (Math.random()*-4 - 2) * (1 + Math.random()*1.2),
+          g: 0.08 + Math.random()*0.06, s: 4 + Math.random()*3,
+          c: colors[Math.floor(Math.random()*colors.length)], a: 1,
+          spin: Math.random()*6.28, dspin: (Math.random()-.5)*0.2 });
+      }
+      animateConfetti();
+    }
+    function animateConfetti(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      confetti.forEach(p=>{
+        p.dy += p.g; p.x += p.dx; p.y += p.dy; p.spin += p.dspin; p.a -= 0.005;
+        ctx.save(); ctx.globalAlpha = Math.max(0, p.a); ctx.translate(p.x, p.y); ctx.rotate(p.spin);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s); ctx.restore();
+      });
+      confetti = confetti.filter(p => p.a > 0 && p.y < canvas.height + 10);
+      if (confetti.length) requestAnimationFrame(animateConfetti);
+    }
+
+    // Accessibility
+    document.getElementById('noBtn').setAttribute('tabindex','-1');
+    yes.setAttribute('autofocus','');
+
+    // --- MUSIC: YouTube official embed (legal to embed the official upload) ---
+    // We set the YouTube SRC only after first interaction to pass autoplay rules.
+    // Source: Saregama Music's "Pehla Nasha" official upload (video ID below). cite:turn2search9,turn2search2
+    let musicArmed = false;
+    function startMusic(unmute=false){
+      try{
+        // Method B (your MP3): uncomment to use
+        const audio = document.getElementById('song'); 
+        audio.volume = 0.95;
+        audio.play().catch(()=>{>{ playBtn.style.display='inline-block'; });
+
+        // Method A: YouTube official
+        const player = document.getElementById('ytPlayer');
+        if (!musicArmed){
+          const YT_ID = 'LzXLcKbbDTw'; // Saregama Music lyrical upload
+          const params = new URLSearchParams({
+            autoplay: '1',
+            mute: unmute ? '0' : '1',
+            controls: '0',
+            loop: '1',
+            playlist: YT_ID,
+            modestbranding: '1',
+            playsinline: '1'
+          });
+          player.src = `https://www.youtube.com/embed/${YT_ID}?${params.toString()}`;
+          musicArmed = true;
+        } else if (unmute){
+          const src = player.src.replace('mute=1','mute=0');
+          if (src !== player.src) player.src = src;
+        }
+      }catch(e){}
+    }
+    window.addEventListener('pointerdown', ()=> startMusic(false), {once:true});
+  </script>
+</body>
+</html>
